@@ -22,13 +22,18 @@ COPY ./ ./
 
 RUN set -e && \
   go build -o ./out/scancode-analyzer ./modules/analyzers/scancode-analyzer && \
-  go build -o ./out/qmstr-master ./masterserver/
+  go build -o ./out/qmstr-master ./masterserver/ && \
+  go build -o ./out/test-reporter ./modules/reporters/test-reporter && \
+  go build -o ./out/package-manifest-reporter ./modules/reporters/package-manifest-reporter && \
+  go build -o ./out/fasten-reporter ./modules/reporters/fasten-reporter
 
 ################################################################################
 # STAGE 1b: Downloading scancode                                               #
 ################################################################################
 
 FROM alpine as scancode
+
+# https://github.com/nexB/scancode-toolkit/releases/download/v3.2.3/scancode-toolkit-3.2.3.zip
 
 ARG SCANCODE_VERSION
 ARG SCANCODE_RELEASE_CANDIDATE

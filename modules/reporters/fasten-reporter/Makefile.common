@@ -1,0 +1,8 @@
+FASTEN_REPORTER := fasten-reporter
+
+.PHONY: $(FASTEN_REPORTER)
+$(FASTEN_REPORTER): $(OUTDIR)reporters/$(FASTEN_REPORTER)
+
+$(OUTDIR)reporters/$(FASTEN_REPORTER): $(GO_SRCS)
+	go test ./modules/$(subst $(OUTDIR),,$@)
+	go build -o $@ ./modules/$(subst $(OUTDIR),,$@)

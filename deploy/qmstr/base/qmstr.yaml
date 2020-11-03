@@ -12,3 +12,8 @@ project:
         workdir: "/var/qmstr/buildroot"
         resultfile: "/var/qmstr/buildroot/scancode.json"
 #       cached: "true"
+  reporting:
+    - reporter: package-manifest-reporter
+      name: "Package manifest Reporter"
+      config:
+        outputdir: "/var/qmstr/buildroot"

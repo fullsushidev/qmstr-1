@@ -13,7 +13,7 @@ project:
         resultfile: "/var/qmstr/buildroot/scancode.json"
 #       cached: "true"
   reporting:
-    - reporter: package-manifest-reporter
+    - reporter: fasten-reporter
       name: "Package manifest Reporter"
-      config:
-        outputdir: "/var/qmstr/buildroot"
+#      config:
+#        outputdir: "/var/qmstr/buildroot"

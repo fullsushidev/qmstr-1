@@ -63,8 +63,8 @@ Example error message
           "version":"4.12"
       },
     "created_at": 1594820036478, 
-    "err":{
-        "msg":"git@github.com:knowm/XChart.git: remote hung up unexpectedly",
+    "error":{
+        "message":"git@github.com:knowm/XChart.git: remote hung up unexpectedly",
         "stacktrace":[
          "org.eclipse.jgit.api.FetchCommand.call(FetchCommand.java:222)",
          "org.eclipse.jgit.api.CloneCommand.fetch(CloneCommand.java:292)",
@@ -76,7 +76,7 @@ Example error message
          "eu.fasten.server.plugins.kafka.FastenKafkaPlugin.run(FastenKafkaPlugin.java:105)",
          "java.base/java.lang.Thread.run(Thread.java:834)"
       ],
-      "error":"TransportException"
+      "name":"TransportException"
     }
 }
 ```

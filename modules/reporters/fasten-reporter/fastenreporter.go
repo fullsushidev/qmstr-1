@@ -3,11 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/golang/protobuf/jsonpb"
-	"github.com/golang/protobuf/ptypes"
 	"github.com/QMSTR/qmstr/lib/go-qmstr/module"
 	"github.com/QMSTR/qmstr/lib/go-qmstr/service"
-	"github.com/spdx/tools-golang/v0/spdx"
+	"github.com/golang/protobuf/jsonpb"
+	"github.com/golang/protobuf/ptypes"
 	"log"
 )
 
@@ -26,8 +25,8 @@ func (f FastenReporter) Configure(configMap map[string]string) error {
 func (f FastenReporter) Report(masterClient *module.MasterClient) error {
 
 	// Keeping track of all files and hash codes
-	files := []*spdx.File2_1{}
-	hashes := []string{}
+	//files := []*spdx.File2_1{}
+	//hashes := []string{}
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -38,7 +37,7 @@ func (f FastenReporter) Report(masterClient *module.MasterClient) error {
 		return fmt.Errorf("couldn't get PackageNodes, %v", err)
 	}
 
-	// Response object
+	// Response object initialization
 	response := &service.FastenResponse{}
 	response.PluginName = "QMSTR"
 	response.PluginVersion = "0.0.1"
@@ -47,23 +46,13 @@ func (f FastenReporter) Report(masterClient *module.MasterClient) error {
 	//response.Input.Forge = // TODO fill in
 	//response.Input.Version = // TODO fill in
 	response.CreatedAt = ptypes.TimestampNow()
-	response.Payload = &service.FastenResponse_Report{}
+	response.Payload = &service.FastenResponse_Report{Report: &service.FastenReport{
+		PackageMetadata: &service.FastenReport_PackageMetadata{},
+		FileMetadata:    []*service.FastenReport_FileMetadata{},
+	}}
 
 	// Retrieving license and compliance information for every PackageNode
 	for _, packageNode := range packageNodes {
-
-		// Retrieving package information
-		switch payload := response.Payload.(type) {
-		case *service.FastenResponse_Report:
-			payload.Report.PackageMetadata = &service.FastenReport_PackageMetadata{
-				Licenses: nil, // TODO fill in
-				Authors:  nil, // TODO fill in
-			}
-			payload.Report.FileMetadata = []*service.FastenReport_FileMetadata{}
-		default:
-			// TODO return FastenError proto message
-			return fmt.Errorf("response initialization error, %v", err)
-		}
 
 		// Retrieving all FileNodes of the current package
 		fileNodes, err := packageNode.GetTargets()
@@ -74,20 +63,27 @@ func (f FastenReporter) Report(masterClient *module.MasterClient) error {
 		}
 
 		// Retrieving files metadata
-		rserv := masterClient.RptSvcClient
 		for _, fileNode := range fileNodes {
-			licenses, err := rserv.GetInfoData(ctx, &service.InfoDataRequest{
-				RootID: fileNode.Uid, Infotype: "license", Datatype: "name"})
+
+			// Retrieving file licenses
+			log.Printf("FileNode %v has FileDataNode %v", fileNode.GetUid(), fileNode.GetFileData().GetUid())
+			licenses, err := masterClient.RptSvcClient.GetInfoData(ctx, &service.InfoDataRequest{
+				RootID: fileNode.GetFileData().GetUid(), // FIXME empty FileDataNode uid
+				Infotype: "license",
+				Datatype: "name",
+			})
 			if err != nil {
 				// TODO return FastenError proto message
 				return fmt.Errorf("couldn't get license node, %v", err)
 			}
+
+			// Filling file response objects
 			switch payload := response.Payload.(type) {
 			case *service.FastenResponse_Report:
 				payload.Report.FileMetadata = append(payload.Report.FileMetadata,
 					&service.FastenReport_FileMetadata{
-						FileName: fileNode.Path,
-						Sha_1:    fileNode.FileData.Hash,
+						FileName: fileNode.GetPath(),
+						Sha_1:    fileNode.FileData.GetHash(),
 						Licenses: licenses.GetData(),
 					})
 			default:
@@ -99,7 +95,11 @@ func (f FastenReporter) Report(masterClient *module.MasterClient) error {
 
 	// Printing JSON to standard output for debugging purposes
 	marshaler := jsonpb.Marshaler{}
-	log.Printf("Result: %v", marshaler.MarshalToString(response))
+	formattedResponse, err := marshaler.MarshalToString(response)
+	if err != nil {
+		return fmt.Errorf("couldn't format response to stdout")
+	}
+	log.Printf("Result: %v", formattedResponse)
 
 	return nil
 }

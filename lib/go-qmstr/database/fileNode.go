@@ -286,3 +286,56 @@ func (db *DataBase) GetFileNodeLeaves(offset int, first int) ([]*service.FileNod
 	}
 	return ret["filenodeleaves"], nil
 }
+
+func (db *DataBase) GetAllFileNodesMetadata(infotype string, datatype string) ([]*service.FileNode, error) {
+	const q = `
+	query FilesMetadata($itype: string, $dtype: string) {
+		FileNodes(func: has(fileNodeType)) @cascade {
+			path
+			fileData { # FileDataNodes
+				hash
+				additionalInfo @filter(eq(type, $itype))(orderdesc: confidenceScore, first: 1) { # InfoNodes
+					type
+					dataNodes @filter(eq(type, $dtype)) { # DataNodes
+						data
+					}
+				}
+			}
+		}
+	}`
+
+	vars := map[string]string{"$itype": infotype, "$dtype": datatype}
+	queryResult, err := db.client.NewTxn().QueryWithVars(context.Background(), q, vars)
+	if err != nil {
+		return nil, err
+	}
+
+	// Unmarshaling to key-value map
+	var m map[string]interface{}
+	err = json.Unmarshal(queryResult.Json, &m)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Constructing the result
+	result := []*service.FileNode{}
+	fileNodes := m["FileNodes"].([]interface{})
+	for _, fileNode := range fileNodes {
+		path := fileNode.(map[string]interface{})["path"].(string)
+		hash := fileNode.(map[string]interface{})["fileData"].(map[string]interface{})["hash"].(string)
+		license := fileNode.(map[string]interface{})["fileData"].(map[string]interface{})["additionalInfo"].([]interface{})[0].(map[string]interface{})["dataNodes"].([]interface{})[0].(map[string]interface{})["data"].(string)
+		result = append(result, &service.FileNode{
+			Path: path,
+			FileData: &service.FileNode_FileDataNode{
+				FileDataNodeType: hash,
+				AdditionalInfo: []*service.InfoNode{{
+					DataNodes: []*service.InfoNode_DataNode{{
+						Data: license,
+					}},
+				}},
+			},
+		})
+	}
+
+	return result, nil
+}

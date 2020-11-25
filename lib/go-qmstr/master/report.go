@@ -103,3 +103,27 @@ func (phase *serverPhaseReport) GetInfoData(in *service.InfoDataRequest) (*servi
 	}
 	return &service.InfoDataResponse{Data: data}, nil
 }
+
+func (phase *serverPhaseReport) GetAllFileNodesMetadata(in *service.InfoDataRequest, stream service.ReportService_GetAllFileNodesMetadataServer) error {
+	db, err := phase.getDataBase()
+	if err != nil {
+		return err
+	}
+	var fileNodes []*service.FileNode
+	if in.Infotype == "" {
+		return errors.New("no info type provided (\"license\" or \"copyright\")")
+	}
+	if in.Datatype == "" {
+		return errors.New("no data type provided (e.g., \"name\")")
+	}
+
+	fileNodes, err = db.GetAllFileNodesMetadata(in.Infotype, in.Datatype)
+	if err != nil {
+		return err
+	}
+
+	for _, fileNode := range fileNodes {
+		stream.Send(fileNode)
+	}
+	return nil
+}

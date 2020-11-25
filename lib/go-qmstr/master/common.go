@@ -35,6 +35,7 @@ type serverPhase interface {
 	DeleteEdge(*service.DeleteMessage) (*service.BuildResponse, error)
 	GetDiagnosticNode(*service.DiagnosticNode, service.ControlService_GetDiagnosticNodeServer) error
 	GetInfoData(*service.InfoDataRequest) (*service.InfoDataResponse, error)
+	GetAllFileNodesMetadata(*service.InfoDataRequest, service.ReportService_GetAllFileNodesMetadataServer) error
 	ExportSnapshot(*service.ExportRequest) (*service.ExportResponse, error)
 	requestExport() error
 	getPostInitPhase() service.Phase
@@ -213,6 +214,10 @@ func (gsp *genericServerPhase) GetDiagnosticNode(in *service.DiagnosticNode, str
 
 func (gsp *genericServerPhase) GetInfoData(in *service.InfoDataRequest) (*service.InfoDataResponse, error) {
 	return nil, ErrWrongPhase
+}
+
+func (gsp *genericServerPhase) GetAllFileNodesMetadata(in *service.InfoDataRequest, stream service.ReportService_GetAllFileNodesMetadataServer) error {
+	return ErrWrongPhase
 }
 
 func (gsp *genericServerPhase) ExportSnapshot(in *service.ExportRequest) (*service.ExportResponse, error) {

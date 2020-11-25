@@ -206,6 +206,10 @@ func (s *server) GetInfoData(ctx context.Context, in *service.InfoDataRequest) (
 	return s.currentPhase.GetInfoData(in)
 }
 
+func (s *server) GetAllFileNodesMetadata(in *service.InfoDataRequest, stream service.ReportService_GetAllFileNodesMetadataServer) error {
+	return s.currentPhase.GetAllFileNodesMetadata(in, stream)
+}
+
 func (s *server) ExportSnapshot(ctx context.Context, in *service.ExportRequest) (*service.ExportResponse, error) {
 	return s.currentPhase.ExportSnapshot(in)
 }

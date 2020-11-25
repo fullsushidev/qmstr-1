@@ -27,4 +27,5 @@ service ReportService {
   rpc GetReporterConfig(ReporterConfigRequest) returns (ReporterConfigResponse) {}
   rpc GetInfoData(InfoDataRequest) returns (InfoDataResponse) {}
   rpc GetProjectNode(ProjectNode) returns (ProjectNode) {}
+  rpc GetAllFileNodesMetadata(InfoDataRequest) returns (stream FileNode) {}
 }

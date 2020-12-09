@@ -63,6 +63,13 @@ spec:
         volumeMounts:
         - name: buildroot-volume
           mountPath: /home/configure/buildroot
+      - name: wait-for-rabbit
+        image: endocode/rabbit-poller
+        env:
+          - name: RABBIT_HOST
+            value: "rabbitmq-service"
+          - name: RABBIT_PORT
+            value: "5672"
       volumes:
       - name: buildroot-volume
         emptyDir: {}

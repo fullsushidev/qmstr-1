@@ -72,7 +72,7 @@ USER root
 RUN set -e && \
   mkdir -p /usr/share/man/man1 && \
   apt update  && \
-  apt install -y --no-install-recommends openjdk-11-jdk openjfx maven && \
+  apt install -y --no-install-recommends curl openjdk-11-jdk openjfx maven && \
   mkdir -p ${M2_HOME}/conf
 
 ENV JAVA_HOME="/usr/lib/jvm/java-1.11.0-openjdk-amd64"

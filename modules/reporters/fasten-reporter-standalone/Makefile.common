@@ -1,4 +1,4 @@
-FASTEN_REPORTER := fasten-reporter
+FASTEN_REPORTER := fasten-reporter-standalone
 
 .PHONY: $(FASTEN_REPORTER)
 $(FASTEN_REPORTER): $(OUTDIR)reporters/$(FASTEN_REPORTER)
